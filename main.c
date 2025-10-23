@@ -3,5 +3,5 @@
 #include "header.h"
 
 int main() {
-    file_exist()
+    file_exist();
 }   
