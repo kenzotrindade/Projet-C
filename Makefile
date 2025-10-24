@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -g
-TARGET = main
-SRCS = test.c
+TARGET = pathfinding
+SRCS = $(wildcard *.c)
 
 all:
 	$(CC) $(CFLAGS) $(SRCS) -o $(TARGET) -lm
