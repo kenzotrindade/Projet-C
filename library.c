@@ -83,7 +83,7 @@ int end_locate(char *filename) {
         }
     }
     fclose(file);
-    return 2;
+    return 3;
 }
 
 Node* find_node(Node **nodes, int size, int id) {
@@ -94,11 +94,11 @@ Node* find_node(Node **nodes, int size, int id) {
     }
     return NULL;
 }
-
+// ToDo changer links_count par next
 void add_links(Node *n, Node *links) {
     n->links_count++;
     n->links = realloc(n->links, n->links_count * sizeof(Node*));
-    n->links[n->links_count - 1] = links;
+    n->links[n->links_count - 1] = links; // Permet de récupérer le head car sinon se fait écraser
 }
 
 int file_path(char *filename) {
