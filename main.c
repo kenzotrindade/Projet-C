@@ -8,8 +8,10 @@ int main() {
         printf("The file does'nt exist\n");
     }
 
-    printf("Le nombre de noeuds est de : %d\n",sum_node("file.txt"));
+    printf("nodes: %d\n",sum_node("file.txt"));
 
     int count_links = links_nodes("file.txt");
-    printf("Le nombre de links : %d\n", count_links);
+    printf("links: %d\n", count_links);
+    printf("start: %d\n", start_locate("file.txt"));
+    printf("end: %d\n", end_locate("file.txt"));
 }
