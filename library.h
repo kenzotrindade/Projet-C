@@ -6,8 +6,8 @@ typedef struct n{
 }Node;
 
 void file_exist();
+
+
 Node** init_node(char *filename);
 
-Node** init_node(char *filename) {
-
-}
+// Node** init_node(char *filename);
