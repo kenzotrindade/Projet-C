@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include "library.h"
-#include "header.h"
 
 int main() {
-    file_exist();
-}   
+    if (file_exist("file.txt") == 0) {
+        printf("The file exist.\n");
+    } else if (file_exist("file.txt") == 1){
+        printf("The file does'nt exist\n");
+    }
+}

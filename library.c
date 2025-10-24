@@ -1,8 +1,13 @@
 #include <stdio.h>
 #include "library.h"
-#include "header.h"
 #include <string.h>
 
-void file_exist(){
-    printf("Hello world ! ");
+int file_exist(char *filename) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        return 1;
+    } else {
+        fclose(file);
+        return 0;
+    }
 }

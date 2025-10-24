@@ -5,9 +5,6 @@ typedef struct n{
     struct n **links;
 }Node;
 
-void file_exist();
-
+int file_exist(char *filename);
 
 Node** init_node(char *filename);
-
-// Node** init_node(char *filename);
