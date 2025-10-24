@@ -6,7 +6,7 @@ typedef struct n{
     int links_count;
     int visited;
     int distance;
-    struct Node **parent;
+    // struct Node **parent;
 }Node;
 
 // typedef enum{
@@ -23,4 +23,7 @@ int start_locate(char *filename);
 int end_locate(char *filename);
 Node* find_node(Node **nodes, int size, int id);
 void add_links(Node *n, Node *links);
-int file_path(char *filename);
+Node** init_node(char *filename);
+void parse_link(char *line, int *id1, int *id2);
+void init_links(char *filename, Node **nodes, int node_count);
+Node** file_path(char *filename);

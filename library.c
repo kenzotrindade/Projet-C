@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "library.h"
-
+// ToDo faire un système de ./pathfinding "Mon fichier" en terminal
 int file_exist(char *filename) {
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
@@ -101,12 +101,77 @@ void add_links(Node *n, Node *links) {
     n->links[n->links_count - 1] = links; // Permet de récupérer le head car sinon se fait écraser
 }
 
-int file_path(char *filename) {
+Node** init_node(char *filename){
     FILE *file = fopen(filename, "r");
-    int node_count = sum_node(filename);
-    Node **nodes = malloc(node_count * sizeof(Node*));
+    int count = sum_node(filename);
+    Node **nodes = malloc(count + 1 * sizeof(Node*));
     char buffer[256];
+    int i = 0;
     while (fgets(buffer, sizeof(buffer), file)) {
-
+        buffer[strcspn(buffer, "\r\n")] = 0;
+        if (strcmp(buffer, "#nodes") == 0 || strcmp(buffer, "#start") == 0 
+            || strcmp(buffer, "#end") == 0 || strlen(buffer) == 0) {
+            continue;
+        }
+        if (strcmp(buffer, "#links") == 0) {
+            break;
+        }else {
+            nodes[i] = malloc(sizeof(Node));
+            nodes[i]->id = atoi(buffer);
+            nodes[i]->links_count = 0;
+            nodes[i]->links = NULL;
+            i++;
+        }
     }
+    fclose(file);
+    return nodes;
+}
+
+// ToDo faire une fonctions free qui est sur chatgpt
+
+void parse_link(char *line, int *id1, int *id2) {
+    line[strcspn(line, "\r\n")] = 0;
+    if (sscanf(line, "%d-%d", id1, id2) != 2) {
+        *id1 = -1;
+        *id2 = -1;
+    }
+}
+
+
+void init_links(char *filename, Node **nodes, int node_count){
+    FILE *file = fopen(filename, "r");
+    char buffer[256];
+    int in_links = 0; 
+    while (fgets(buffer, sizeof(buffer), file)) {
+        buffer[strcspn(buffer, "\r\n")] = 0;
+        if (!in_links) {
+            if (strcmp(buffer, "#links") == 0) in_links = 1; 
+            continue; 
+        }
+        int id1, id2;
+        parse_link(buffer, &id1, &id2);
+        if (id1 != -1 && id2 != -1) {
+            Node *n1 = find_node(nodes, node_count, id1);
+            Node *n2 = find_node(nodes, node_count, id2);
+            add_links(n1, n2);
+            add_links(n2, n1);
+        }
+    }
+    fclose(file);
+}
+
+
+
+Node** file_path(char *filename) {
+    int size = sum_node(filename);
+    Node **nodes = init_node(filename);  // initialise tous les nodes
+    init_links(filename, nodes, size);   // initialise les liens
+
+    int index_start = start_locate(filename);
+    int index_end   = end_locate(filename);
+
+    Node *start = find_node(nodes, size, index_start);
+    Node *end   = find_node(nodes, size, index_end);
+
+    return nodes; // on retourne le tableau de nodes initialisé et relié
 }
