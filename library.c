@@ -1,49 +1,112 @@
 #include <stdio.h>
-#include "library.h"
 #include <string.h>
+#include <stdlib.h>
+#include "library.h"
 
 int file_exist(char *filename) {
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
         return 1;
-    } else {
-        fclose(file);
-        return 0;
     }
+    fclose(file);
+    return 0;
 }
 
-int sum_node(char *file) {
-    int compt = 0;
+int sum_node(char *filename) {
+    FILE *file = fopen(filename, "r");
     char buffer[256];
-    FILE *filen = fopen(file, "r");
-    while (fgets(buffer, sizeof(buffer), filen) != NULL) {
+    int count = 0;
+    
+    while (fgets(buffer, sizeof(buffer), file)) {
         buffer[strcspn(buffer, "\r\n")] = 0;
-        printf("%s\n", buffer); 
         if (strcmp(buffer, "#links") == 0) {
             break;
         }
-        if (strcmp(buffer, "#nodes") == 0 ||
-            strcmp(buffer, "#start") == 0 ||
-            strcmp(buffer, "#end") == 0) {
+        if (strcmp(buffer, "#nodes") == 0 || strcmp(buffer, "#start") == 0 
+            || strcmp(buffer, "#end") == 0 || strlen(buffer) == 0) {
             continue;
         }
-        compt += 1;
+        count++;
     }
-    fclose(filen);
-    return compt;
+    fclose(file);
+    return count;
 }
 
 int links_nodes(char *filename) {
     FILE *file = fopen(filename, "r");
-    int count = 0;
     char buffer[256];
+    int count = 0;
+    
     while (fgets(buffer, sizeof(buffer), file)) {
-        for (int i=0;buffer[i] != '\0'; i++) {
+        for (int i = 0; buffer[i] != '\0'; i++) {
             if (buffer[i] == '-') {
                 count++;
-            }  
+            }
         }
     }
-    return count;
     fclose(file);
+    return count;
+}
+
+int start_locate(char *filename) {
+    FILE *file = fopen(filename, "r");
+    char buffer[256];
+    int found = 0;
+    
+    while (fgets(buffer, sizeof(buffer), file)) {
+        buffer[strcspn(buffer, "\r\n")] = 0;
+        if (found) {
+            fclose(file);
+            return atoi(buffer);
+        }
+        if (strcmp(buffer, "#start") == 0) {
+            found = 1;
+        }
+    }
+    fclose(file);
+    return 2;
+}
+
+int end_locate(char *filename) {
+    FILE *file = fopen(filename, "r");
+    char buffer[256];
+    int found = 0;
+    
+    while (fgets(buffer, sizeof(buffer), file)) {
+        buffer[strcspn(buffer, "\r\n")] = 0;
+        if (found) {
+            fclose(file);
+            return atoi(buffer);
+        }
+        if (strcmp(buffer, "#end") == 0) {
+            found = 1;
+        }
+    }
+    fclose(file);
+    return 2;
+}
+
+Node* find_node(Node **nodes, int size, int id) {
+    for (int i=0; i<size;i++) {
+        if(nodes[i]->id == id) {
+            return nodes[i];
+        }
+    }
+    return NULL;
+}
+
+void add_links(Node *n, Node *links) {
+    n->links_count++;
+    n->links = realloc(n->links, n->links_count * sizeof(Node*));
+    n->links[n->links_count - 1] = links;
+}
+
+int file_path(char *filename) {
+    FILE *file = fopen(filename, "r");
+    int node_count = sum_node(filename);
+    Node **nodes = malloc(node_count * sizeof(Node*));
+    char buffer[256];
+    while (fgets(buffer, sizeof(buffer), file)) {
+
+    }
 }
