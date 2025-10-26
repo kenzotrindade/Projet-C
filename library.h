@@ -1,5 +1,8 @@
 #include <stdio.h>
 
+#define MAX_NODE_ID 1000
+
+
 typedef struct n{
     int id;
     struct n **links;

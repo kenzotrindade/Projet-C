@@ -171,19 +171,22 @@ Node* create_node(int id) {
     return node;
 }
 
-// 17 lignes 
+// 20 lignes 
 Node** init_node(char *filename) {
     FILE *file = fopen(filename, "r");
     int count = sum_node(filename);
     Node **nodes = malloc(count * sizeof(Node*));
     char buffer[256];
     int i = 0;
-    
     while (fgets(buffer, sizeof(buffer), file)) {
         clean_line(buffer);
         if (is_section(buffer)) continue;
         if (strcmp(buffer, "#links") == 0) break;
         int node_id = string_to_number(buffer);
+        if (node_id > MAX_NODE_ID) {
+            printf("Error: node ID too large (%d > %d)\n", node_id, MAX_NODE_ID);
+            exit(1); // Exit car on peut pas return.
+        }
         nodes[i] = create_node(node_id);
         i++;
     }
@@ -438,6 +441,5 @@ void free_memory(Node **nodes, Node **unconnected, int count) {
 // ToDo faire arrèter le programme lorsque pas de start ou end, c'est bugger :/
 // ToDo check les règles de convention de code
 // ToDo check si le code est cramé
-// ToDo algo peux check si les modifs avant le code ?
 // ToDo Bug bounty
 // ToDo rendre le code robuste
