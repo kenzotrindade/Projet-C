@@ -3,17 +3,44 @@
 #include <stdlib.h>
 #include "library.h"
 
+// 8 lignes 
 int file_exist(char *filename) {
     FILE *file = fopen(filename, "r");
-    if (file == NULL) return FILE_NOT_FOUND;
+    if (file == NULL){
+        printf("FILE_NOT_FOUND\n");
+        return FILE_NOT_FOUND;
+    }
     fclose(file);
     return 0;
 }
 
+// 18 lignes 
+int check_file_format(char *filename){
+    FILE *file = fopen(filename, "r");
+    char buffer[256];
+    int node = 0, links = 0;
+
+    while (fgets(buffer, sizeof(buffer), file)) {
+        clean_line(buffer);
+        if (strcmp(buffer, "#nodes") == 0) node = 1;
+        if (strcmp(buffer, "#links") == 0) links = 1;
+    }
+
+    if (node == 0 || links == 0){
+        printf("BAD_FILE_FORMAT\n");
+        return BAD_FILE_FORMAT;
+    }
+
+    fclose(file);
+    return 0;
+}
+
+// 3 lignes 
 void clean_line(char *buffer) {
     buffer[strcspn(buffer, "\r\n")] = 0;
 }
 
+// 14 lignes 
 int is_section(char *line) {
     if (strcmp(line, "#nodes") == 0) {
         return 1;
@@ -30,6 +57,7 @@ int is_section(char *line) {
     return 0;
 }
 
+// 17 lignes 
 int sum_node(char *filename) {
     FILE *file = fopen(filename, "r");
     char buffer[256];
@@ -49,6 +77,7 @@ int sum_node(char *filename) {
     return count;
 }
 
+// 12 lignes 
 int links_nodes(char *filename) {
     FILE *file = fopen(filename, "r");
     char buffer[256];
@@ -63,6 +92,7 @@ int links_nodes(char *filename) {
     return count;
 }
 
+// 8 lignes 
 int string_to_number(char *str) {
     int result = 0;
     int i = 0;
@@ -73,6 +103,7 @@ int string_to_number(char *str) {
     return result;
 }
 
+// 17 lignes 
 int find_value(char *filename, char *section) {
     FILE *file = fopen(filename, "r");
     char buffer[256];
@@ -92,22 +123,27 @@ int find_value(char *filename, char *section) {
     return 0;
 }
 
+// 7 lignes 
 int start_locate(char *filename) {
     int result = find_value(filename, "#start");
     if (result == 0) {
+        printf("NO_START_NODE\n");
         return NO_START_NODE;
     }
     return result;
 }
 
+// 7 lignes 
 int end_locate(char *filename) {
     int result = find_value(filename, "#end");
     if (result == 0) {
+        printf("NO_END_NODE\n");
         return NO_END_NODE;
     }
     return result;
 }
 
+// 7 lignes 
 Node* find_node(Node **nodes, int size, int id) {
     for (int i = 0; i < size; i++) {
         if (nodes[i]->id == id) {
@@ -117,6 +153,7 @@ Node* find_node(Node **nodes, int size, int id) {
     return NULL;
 }
 
+// 6 lignes 
 void add_links(Node *n, Node *link) {
     int new_count = n->links_count + 1;
     Node **new_links = realloc(n->links, new_count * sizeof(Node*));
@@ -125,6 +162,7 @@ void add_links(Node *n, Node *link) {
     n->links_count = new_count;
 }
 
+// 6 lignes 
 Node* create_node(int id) {
     Node *node = malloc(sizeof(Node));
     node->id = id;
@@ -133,6 +171,7 @@ Node* create_node(int id) {
     return node;
 }
 
+// 17 lignes 
 Node** init_node(char *filename) {
     FILE *file = fopen(filename, "r");
     int count = sum_node(filename);
@@ -152,6 +191,7 @@ Node** init_node(char *filename) {
     return nodes;
 }
 
+// 8 lignes 
 int parse_first_number(char *line) {
     int num = 0;
     int i = 0;
@@ -162,6 +202,7 @@ int parse_first_number(char *line) {
     return num;
 }
 
+// 14 lignes 
 int parse_second_number(char *line) {
     int i = 0;
     while (line[i] != '-' && line[i] != '\0') {
@@ -178,6 +219,7 @@ int parse_second_number(char *line) {
     return num;
 }
 
+// 8 lignes 
 void parse_link(char *line, int *id1, int *id2) {
     clean_line(line);
     *id1 = parse_first_number(line);
@@ -188,16 +230,17 @@ void parse_link(char *line, int *id1, int *id2) {
     }
 }
 
+// 4 lignes 
 void connect_nodes(Node *n1, Node *n2) {
     add_links(n1, n2);
     add_links(n2, n1);
 }
 
+// 20 lignes 
 void init_links(char *filename, Node **nodes, int count) {
     FILE *file = fopen(filename, "r");
     char buffer[256];
     int links_section = 0;
-    
     while (fgets(buffer, sizeof(buffer), file)) {
         clean_line(buffer);
         if (links_section == 0) {
@@ -211,13 +254,12 @@ void init_links(char *filename, Node **nodes, int count) {
         if (id1 == 0 || id2 == 0) continue;
         Node *n1 = find_node(nodes, count, id1);
         Node *n2 = find_node(nodes, count, id2);
-        if (n1 != NULL && n2 != NULL) {
-            connect_nodes(n1, n2);
-        }
+        if (n1 != NULL && n2 != NULL) connect_nodes(n1, n2);
     }
     fclose(file);
 }
 
+// 5 lignes 
 Node** file_path(char *filename) {
     int size = sum_node(filename);
     Node **nodes = init_node(filename);
@@ -225,6 +267,7 @@ Node** file_path(char *filename) {
     return nodes;
 }
 
+// 5 lignes 
 void init_arrays(int *visited, int *parent) {
     for (int i = 0; i < 1000; i++) {
         visited[i] = 0;
@@ -232,6 +275,7 @@ void init_arrays(int *visited, int *parent) {
     }
 }
 
+// 12 lignes 
 void add_neighbors_to_queue(Node *current, Node **queue, int *rear,
                              int *visited, int *parent) {
     for (int i = 0; i < current->links_count; i++) {
@@ -246,17 +290,16 @@ void add_neighbors_to_queue(Node *current, Node **queue, int *rear,
     }
 }
 
+// 23 lignes 
 void display_nodes(Node *start) {
     if (start == NULL) return;
     int visited[1000] = {0};
     Node *queue[1000];
     int front = 0;
     int rear = 0;
-    
     queue[rear] = start;
     rear = rear + 1;
     visited[start->id] = 1;
-    
     while (front < rear) {
         Node *current = queue[front];
         front = front + 1;
@@ -273,15 +316,14 @@ void display_nodes(Node *start) {
     printf("\n");
 }
 
+// 19 lignes 
 void mark_all_connected(Node *head, int *visited) {
     Node *queue[1000];
     int front = 0;
     int rear = 0;
-    
     queue[rear] = head;
     rear = rear + 1;
     visited[head->id] = 1;
-    
     while (front < rear) {
         Node *current = queue[front];
         front = front + 1;
@@ -296,6 +338,7 @@ void mark_all_connected(Node *head, int *visited) {
     }
 }
 
+// 17 lignes 
 Node** get_unconnected_nodes(Node **nodes, int size, Node *head) {
     Node **unconnected = malloc(size * sizeof(Node*));
     for (int i = 0; i < size; i++) {
@@ -315,6 +358,7 @@ Node** get_unconnected_nodes(Node **nodes, int size, Node *head) {
     return unconnected;
 }
 
+// 6 lignes 
 void print_path(int *path, int len) {
     for (int i = len - 1; i >= 0; i--) {
         printf("%d", path[i]);
@@ -323,6 +367,7 @@ void print_path(int *path, int len) {
     printf("\n");
 }
 
+// 8 lignes 
 void build_path(int end_id, int *parent, int *path, int *size) {
     int node_id = end_id;
     *size = 0;
@@ -333,18 +378,17 @@ void build_path(int end_id, int *parent, int *path, int *size) {
     }
 }
 
+// 24 lignes 
 int display_path(Node *start, Node *end) {
     int visited[1000];
     int parent[1000];
     Node *queue[1000];
     int front = 0;
     int rear = 0;
-    
     init_arrays(visited, parent);
     queue[rear] = start;
     rear = rear + 1;
     visited[start->id] = 1;
-    
     while (front < rear) {
         Node *current = queue[front];
         front = front + 1;
@@ -361,6 +405,7 @@ int display_path(Node *start, Node *end) {
     return 1;
 }
 
+// 17 lignes 
 void print_unconnected(Node **unconnected, int node_count) {
     int has_unconnected = 0;
     for (int i = 0; i < node_count; i++) {
@@ -380,6 +425,7 @@ void print_unconnected(Node **unconnected, int node_count) {
     }
 }
 
+// 7 lignes 
 void free_memory(Node **nodes, Node **unconnected, int count) {
     free(unconnected);
     for (int i = 0; i < count; i++) {
@@ -389,7 +435,7 @@ void free_memory(Node **nodes, Node **unconnected, int count) {
     free(nodes);
 }
 
-// ToDo code 4 d'erreur : pas de section #nodes ou #links
+// ToDo faire arrèter le programme lorsque pas de start ou end, c'est bugger :/
 // ToDo check les règles de convention de code
 // ToDo check si le code est cramé
 // ToDo algo peux check si les modifs avant le code ?

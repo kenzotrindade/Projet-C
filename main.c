@@ -2,10 +2,12 @@
 #include <stdlib.h>
 #include "library.h"
 
+// 28 lignes 
 int main(int argc, char *argv[]) {
     if (argc != 2) return 1;
     char *filename = argv[1];
     if (file_exist(filename)) return FILE_NOT_FOUND;
+    if (check_file_format(filename)) return BAD_FILE_FORMAT;
     int start_id = start_locate(filename);
     if (start_id == 0) return NO_START_NODE;
     int end_id = end_locate(filename);
