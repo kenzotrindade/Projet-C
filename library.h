@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #define MAX_NODE_ID 1000
 
 

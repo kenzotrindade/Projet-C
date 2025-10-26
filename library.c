@@ -14,7 +14,7 @@ int file_exist(char *filename) {
     return 0;
 }
 
-// 18 lignes 
+// 19 lignes 
 int check_file_format(char *filename){
     FILE *file = fopen(filename, "r");
     char buffer[256];
@@ -28,6 +28,7 @@ int check_file_format(char *filename){
 
     if (node == 0 || links == 0){
         printf("BAD_FILE_FORMAT\n");
+        fclose(file);
         return BAD_FILE_FORMAT;
     }
 
@@ -128,7 +129,7 @@ int start_locate(char *filename) {
     int result = find_value(filename, "#start");
     if (result == 0) {
         printf("NO_START_NODE\n");
-        return NO_START_NODE;
+        return 0;
     }
     return result;
 }
@@ -138,7 +139,7 @@ int end_locate(char *filename) {
     int result = find_value(filename, "#end");
     if (result == 0) {
         printf("NO_END_NODE\n");
-        return NO_END_NODE;
+        return 0;
     }
     return result;
 }
@@ -293,13 +294,10 @@ void add_neighbors_to_queue(Node *current, Node **queue, int *rear,
     }
 }
 
-// 23 lignes 
+// 20 lignes 
 void display_nodes(Node *start) {
-    if (start == NULL) return;
-    int visited[1000] = {0};
+    int visited[1000] = {0}, front = 0, rear = 0;
     Node *queue[1000];
-    int front = 0;
-    int rear = 0;
     queue[rear] = start;
     rear = rear + 1;
     visited[start->id] = 1;
@@ -381,13 +379,10 @@ void build_path(int end_id, int *parent, int *path, int *size) {
     }
 }
 
-// 24 lignes 
+// 21 lignes 
 int display_path(Node *start, Node *end) {
-    int visited[1000];
-    int parent[1000];
+    int visited[1000], parent[1000], front = 0, rear = 0;
     Node *queue[1000];
-    int front = 0;
-    int rear = 0;
     init_arrays(visited, parent);
     queue[rear] = start;
     rear = rear + 1;
@@ -438,8 +433,7 @@ void free_memory(Node **nodes, Node **unconnected, int count) {
     free(nodes);
 }
 
-// ToDo faire arrèter le programme lorsque pas de start ou end, c'est bugger :/
-// ToDo check les règles de convention de code
+
 // ToDo check si le code est cramé
 // ToDo Bug bounty
 // ToDo rendre le code robuste
