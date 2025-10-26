@@ -388,3 +388,10 @@ void free_memory(Node **nodes, Node **unconnected, int count) {
     }
     free(nodes);
 }
+
+// ToDo code 4 d'erreur : pas de section #nodes ou #links
+// ToDo check les règles de convention de code
+// ToDo check si le code est cramé
+// ToDo algo peux check si les modifs avant le code ?
+// ToDo Bug bounty
+// ToDo rendre le code robuste
