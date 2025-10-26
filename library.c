@@ -37,8 +37,12 @@ int sum_node(char *filename) {
     
     while (fgets(buffer, sizeof(buffer), file)) {
         clean_line(buffer);
-        if (strcmp(buffer, "#links") == 0) break;
-        if (is_section(buffer)) continue;
+        if (strcmp(buffer, "#links") == 0) {
+            break;
+        }
+        if (is_section(buffer)) {
+            continue;
+        }
         count++;
     }
     fclose(file);
@@ -59,18 +63,30 @@ int links_nodes(char *filename) {
     return count;
 }
 
+int string_to_number(char *str) {
+    int result = 0;
+    int i = 0;
+    while (str[i] != '\0') {
+        result = result * 10 + (str[i] - '0');
+        i++;
+    }
+    return result;
+}
+
 int find_value(char *filename, char *section) {
     FILE *file = fopen(filename, "r");
     char buffer[256];
-    int found = 0;
+    int section_found = 0;
     
     while (fgets(buffer, sizeof(buffer), file)) {
         clean_line(buffer);
-        if (found) { // ToDo changer le juste if(found) -> quelque chose de moins cramé et + sécurisé
+        if (section_found == 1) {
             fclose(file);
-            return atoi(buffer); // ToDo remplacer le atoi si possible
+            return string_to_number(buffer);
         }
-        if (strcmp(buffer, section) == 0) found = 1;
+        if (strcmp(buffer, section) == 0) {
+            section_found = 1;
+        }
     }
     fclose(file);
     return 0;
@@ -102,9 +118,11 @@ Node* find_node(Node **nodes, int size, int id) {
 }
 
 void add_links(Node *n, Node *link) {
-    n->links_count++;
-    n->links = realloc(n->links, n->links_count * sizeof(Node*));
-    n->links[n->links_count - 1] = link; // ToDo voir pour quelque chose de + long mais - cramé
+    int new_count = n->links_count + 1;
+    Node **new_links = realloc(n->links, new_count * sizeof(Node*));
+    new_links[n->links_count] = link;
+    n->links = new_links;
+    n->links_count = new_count;
 }
 
 Node* create_node(int id) {
@@ -124,20 +142,47 @@ Node** init_node(char *filename) {
     
     while (fgets(buffer, sizeof(buffer), file)) {
         clean_line(buffer);
-        if (is_section(buffer)) {
-            continue; }
-        if (strcmp(buffer, "#links") == 0) {
-            break; }
-        nodes[i] = create_node(atoi(buffer)); // ToDo pareil pour le atoi
+        if (is_section(buffer)) continue;
+        if (strcmp(buffer, "#links") == 0) break;
+        int node_id = string_to_number(buffer);
+        nodes[i] = create_node(node_id);
         i++;
     }
     fclose(file);
     return nodes;
 }
 
+int parse_first_number(char *line) {
+    int num = 0;
+    int i = 0;
+    while (line[i] >= '0' && line[i] <= '9') {
+        num = num * 10 + (line[i] - '0');
+        i++;
+    }
+    return num;
+}
+
+int parse_second_number(char *line) {
+    int i = 0;
+    while (line[i] != '-' && line[i] != '\0') {
+        i++;
+    }
+    if (line[i] == '-') {
+        i++;
+    }
+    int num = 0;
+    while (line[i] >= '0' && line[i] <= '9') {
+        num = num * 10 + (line[i] - '0');
+        i++;
+    }
+    return num;
+}
+
 void parse_link(char *line, int *id1, int *id2) {
     clean_line(line);
-    if (sscanf(line, "%d-%d", id1, id2) != 2) { // ToDo essayer de remplacer le "sscanf"
+    *id1 = parse_first_number(line);
+    *id2 = parse_second_number(line);
+    if (*id1 == 0 || *id2 == 0) {
         *id1 = 0;
         *id2 = 0;
     }
@@ -151,20 +196,24 @@ void connect_nodes(Node *n1, Node *n2) {
 void init_links(char *filename, Node **nodes, int count) {
     FILE *file = fopen(filename, "r");
     char buffer[256];
-    int in_links = 0;
+    int links_section = 0;
     
     while (fgets(buffer, sizeof(buffer), file)) {
         clean_line(buffer);
-        if (!in_links) { // ToDo remplacer le !in_links pour - cramé
-            if (strcmp(buffer, "#links") == 0) in_links = 1;
-                continue;
+        if (links_section == 0) {
+            if (strcmp(buffer, "#links") == 0) {
+                links_section = 1;
+            }
+            continue;
         }
         int id1, id2;
         parse_link(buffer, &id1, &id2);
         if (id1 == 0 || id2 == 0) continue;
         Node *n1 = find_node(nodes, count, id1);
         Node *n2 = find_node(nodes, count, id2);
-        if (n1 != NULL && n2 != NULL) connect_nodes(n1, n2);
+        if (n1 != NULL && n2 != NULL) {
+            connect_nodes(n1, n2);
+        }
     }
     fclose(file);
 }
@@ -176,78 +225,91 @@ Node** file_path(char *filename) {
     return nodes;
 }
 
-void init_bfs(int *visited, int *parent) {
+void init_arrays(int *visited, int *parent) {
     for (int i = 0; i < 1000; i++) {
         visited[i] = 0;
         parent[i] = -1;
     }
 }
 
-void init_neighbor(Node *current, Node **queue, int *rear, // ToDo faire la fonction - cramé aussi
-                       int *visited, int *parent) {
+void add_neighbors_to_queue(Node *current, Node **queue, int *rear,
+                             int *visited, int *parent) {
     for (int i = 0; i < current->links_count; i++) {
-        Node *n = current->links[i];
-        if (!visited[n->id]) {
-            visited[n->id] = 1;
-            parent[n->id] = current->id;
-            queue[(*rear)++] = n;
+        Node *neighbor = current->links[i];
+        int neighbor_id = neighbor->id;
+        if (visited[neighbor_id] == 0) {
+            visited[neighbor_id] = 1;
+            parent[neighbor_id] = current->id;
+            queue[*rear] = neighbor;
+            *rear = *rear + 1;
         }
     }
 }
 
-void display_nodes(Node *start) { // ToDo pareil pour cette fonction là
+void display_nodes(Node *start) {
     if (start == NULL) return;
     int visited[1000] = {0};
     Node *queue[1000];
-    int front = 0, rear = 0;
+    int front = 0;
+    int rear = 0;
     
-    queue[rear++] = start;
+    queue[rear] = start;
+    rear = rear + 1;
     visited[start->id] = 1;
     
     while (front < rear) {
-        Node *current = queue[front++];
+        Node *current = queue[front];
+        front = front + 1;
         printf("%d ", current->id);
         for (int i = 0; i < current->links_count; i++) {
-            Node *n = current->links[i];
-            if (!visited[n->id]) {
-                visited[n->id] = 1;
-                queue[rear++] = n;
+            Node *neighbor = current->links[i];
+            if (visited[neighbor->id] == 0) {
+                visited[neighbor->id] = 1;
+                queue[rear] = neighbor;
+                rear = rear + 1;
             }
         }
     }
     printf("\n");
 }
 
-void mark_connected(Node *head, int *visited) { // ToDo pareil ici
+void mark_all_connected(Node *head, int *visited) {
     Node *queue[1000];
-    int front = 0, rear = 0;
+    int front = 0;
+    int rear = 0;
     
-    queue[rear++] = head;
+    queue[rear] = head;
+    rear = rear + 1;
     visited[head->id] = 1;
     
     while (front < rear) {
-        Node *current = queue[front++];
+        Node *current = queue[front];
+        front = front + 1;
         for (int i = 0; i < current->links_count; i++) {
-            Node *n = current->links[i];
-            if (!visited[n->id]) {
-                visited[n->id] = 1;
-                queue[rear++] = n;
+            Node *neighbor = current->links[i];
+            if (visited[neighbor->id] == 0) {
+                visited[neighbor->id] = 1;
+                queue[rear] = neighbor;
+                rear = rear + 1;
             }
         }
     }
 }
 
-Node** get_unconnected_nodes(Node **nodes, int size, Node *head) { // ToDo pareil ici 
+Node** get_unconnected_nodes(Node **nodes, int size, Node *head) {
     Node **unconnected = malloc(size * sizeof(Node*));
-    for (int i = 0; i < size; i++) unconnected[i] = NULL;
+    for (int i = 0; i < size; i++) {
+        unconnected[i] = NULL;
+    }
     
     int visited[1000] = {0};
-    mark_connected(head, visited);
+    mark_all_connected(head, visited);
     
-    int idx = 0;
+    int index = 0;
     for (int i = 0; i < size; i++) {
-        if (!visited[nodes[i]->id]) {
-            unconnected[idx++] = nodes[i];
+        if (visited[nodes[i]->id] == 0) {
+            unconnected[index] = nodes[i];
+            index = index + 1;
         }
     }
     return unconnected;
@@ -265,29 +327,36 @@ void build_path(int end_id, int *parent, int *path, int *size) {
     int node_id = end_id;
     *size = 0;
     while (node_id != -1) {
-        path[(*size)++] = node_id;
+        path[*size] = node_id;
+        *size = *size + 1;
         node_id = parent[node_id];
     }
 }
 
-int display_path(Node *start, Node *end) { // ToDo pareil rendre - cramé la fonction
-    int visited[1000], parent[1000];
+int display_path(Node *start, Node *end) {
+    int visited[1000];
+    int parent[1000];
     Node *queue[1000];
-    int front = 0, rear = 0;
+    int front = 0;
+    int rear = 0;
     
-    init_bfs(visited, parent);
-    queue[rear++] = start;
+    init_arrays(visited, parent);
+    queue[rear] = start;
+    rear = rear + 1;
     visited[start->id] = 1;
     
     while (front < rear) {
-        Node *current = queue[front++];
+        Node *current = queue[front];
+        front = front + 1;
         if (current->id == end->id) {
-            int path[1000], len;
+            int path[1000];
+            int len;
             build_path(end->id, parent, path, &len);
             print_path(path, len);
             return 0;
         }
-        init_neighbor(current, queue, &rear, visited, parent);
+        add_neighbors_to_queue(current, queue, &rear, 
+                               visited, parent);
     }
     return 1;
 }
@@ -300,7 +369,7 @@ void print_unconnected(Node **unconnected, int node_count) {
             break;
         }
     }
-    if (has_unconnected) {
+    if (has_unconnected == 1) {
         printf("unconnected nodes:\n");
         for (int i = 0; i < node_count; i++) {
             if (unconnected[i] != NULL) {

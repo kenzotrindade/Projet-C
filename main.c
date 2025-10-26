@@ -7,9 +7,9 @@ int main(int argc, char *argv[]) {
     char *filename = argv[1];
     if (file_exist(filename)) return FILE_NOT_FOUND;
     int start_id = start_locate(filename);
-    if (start_id == NO_START_NODE) return NO_START_NODE;
+    if (start_id == 0) return NO_START_NODE;
     int end_id = end_locate(filename);
-    if (end_id == NO_END_NODE) return NO_END_NODE;
+    if (end_id == 0) return NO_END_NODE;
     int node_count = sum_node(filename);
     int link_count = links_nodes(filename);
     Node **nodes = init_node(filename);
@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
                                                 start_node);
     print_unconnected(unconnected, node_count);
     printf("pathfinding:\n");
-    display_path(end_node, start_node);
+    display_path(start_node, end_node);
     free_memory(nodes, unconnected, node_count);
     return 0;
 }
