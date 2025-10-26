@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #define MAX_NODE_ID 1000
 
 
@@ -37,10 +35,10 @@ void connect_nodes(Node *n1, Node *n2);
 void init_links(char *filename, Node **nodes, int node_count);
 Node** file_path(char *filename);
 void init_arrays(int *visited, int *parent);
-void add_neighbors_to_queue(Node *current, Node **queue, int *rear,
+void add_next(Node *current, Node **queue, int *rear,
                              int *visited, int *parent);
 void display_nodes(Node *start);
-void mark_all_connected(Node *head, int *visited);
+void connected(Node *head, int *visited);
 Node** get_unconnected_nodes(Node **nodes, int size, Node *head);
 void print_path(int *path, int len);
 void build_path(int end_id, int *parent, int *path, int *size);

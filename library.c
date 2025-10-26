@@ -14,7 +14,7 @@ int file_exist(char *filename) {
     return 0;
 }
 
-// 18 lignes 
+// 19 lignes 
 int check_file_format(char *filename){
     FILE *file = fopen(filename, "r");
     char buffer[256];
@@ -28,6 +28,7 @@ int check_file_format(char *filename){
 
     if (node == 0 || links == 0){
         printf("BAD_FILE_FORMAT\n");
+        fclose(file);
         return BAD_FILE_FORMAT;
     }
 
@@ -128,7 +129,7 @@ int start_locate(char *filename) {
     int result = find_value(filename, "#start");
     if (result == 0) {
         printf("NO_START_NODE\n");
-        return NO_START_NODE;
+        return 0;
     }
     return result;
 }
@@ -138,7 +139,7 @@ int end_locate(char *filename) {
     int result = find_value(filename, "#end");
     if (result == 0) {
         printf("NO_END_NODE\n");
-        return NO_END_NODE;
+        return 0;
     }
     return result;
 }
@@ -185,7 +186,7 @@ Node** init_node(char *filename) {
         int node_id = string_to_number(buffer);
         if (node_id > MAX_NODE_ID) {
             printf("Error: node ID too large (%d > %d)\n", node_id, MAX_NODE_ID);
-            exit(1); // Exit car on peut pas return.
+            exit(1);
         }
         nodes[i] = create_node(node_id);
         i++;
@@ -279,15 +280,15 @@ void init_arrays(int *visited, int *parent) {
 }
 
 // 12 lignes 
-void add_neighbors_to_queue(Node *current, Node **queue, int *rear,
+void add_next(Node *current, Node **queue, int *rear,
                              int *visited, int *parent) {
     for (int i = 0; i < current->links_count; i++) {
-        Node *neighbor = current->links[i];
-        int neighbor_id = neighbor->id;
-        if (visited[neighbor_id] == 0) {
-            visited[neighbor_id] = 1;
-            parent[neighbor_id] = current->id;
-            queue[*rear] = neighbor;
+        Node *next = current->links[i];
+        int next_id = next->id;
+        if (visited[next_id] == 0) {
+            visited[next_id] = 1;
+            parent[next_id] = current->id;
+            queue[*rear] = next;
             *rear = *rear + 1;
         }
     }
@@ -320,7 +321,7 @@ void display_nodes(Node *start) {
 }
 
 // 19 lignes 
-void mark_all_connected(Node *head, int *visited) {
+void connected(Node *head, int *visited) {
     Node *queue[1000];
     int front = 0;
     int rear = 0;
@@ -349,7 +350,7 @@ Node** get_unconnected_nodes(Node **nodes, int size, Node *head) {
     }
     
     int visited[1000] = {0};
-    mark_all_connected(head, visited);
+    connected(head, visited);
     
     int index = 0;
     for (int i = 0; i < size; i++) {
@@ -381,13 +382,11 @@ void build_path(int end_id, int *parent, int *path, int *size) {
     }
 }
 
-// 24 lignes 
+// 22 lignes 
 int display_path(Node *start, Node *end) {
-    int visited[1000];
-    int parent[1000];
+    int visited[1000], parent[1000];
     Node *queue[1000];
-    int front = 0;
-    int rear = 0;
+    int front = 0, rear = 0;
     init_arrays(visited, parent);
     queue[rear] = start;
     rear = rear + 1;
@@ -402,7 +401,7 @@ int display_path(Node *start, Node *end) {
             print_path(path, len);
             return 0;
         }
-        add_neighbors_to_queue(current, queue, &rear, 
+        add_next(current, queue, &rear, 
                                visited, parent);
     }
     return 1;
@@ -437,9 +436,3 @@ void free_memory(Node **nodes, Node **unconnected, int count) {
     }
     free(nodes);
 }
-
-// ToDo faire arrèter le programme lorsque pas de start ou end, c'est bugger :/
-// ToDo check les règles de convention de code
-// ToDo check si le code est cramé
-// ToDo Bug bounty
-// ToDo rendre le code robuste
