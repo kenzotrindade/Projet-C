@@ -294,13 +294,10 @@ void add_next(Node *current, Node **queue, int *rear,
     }
 }
 
-// 23 lignes 
+// 20 lignes 
 void display_nodes(Node *start) {
-    if (start == NULL) return;
-    int visited[1000] = {0};
+    int visited[1000] = {0}, front = 0, rear = 0;
     Node *queue[1000];
-    int front = 0;
-    int rear = 0;
     queue[rear] = start;
     rear = rear + 1;
     visited[start->id] = 1;
@@ -382,11 +379,10 @@ void build_path(int end_id, int *parent, int *path, int *size) {
     }
 }
 
-// 22 lignes 
+// 21 lignes 
 int display_path(Node *start, Node *end) {
-    int visited[1000], parent[1000];
+    int visited[1000], parent[1000], front = 0, rear = 0;
     Node *queue[1000];
-    int front = 0, rear = 0;
     init_arrays(visited, parent);
     queue[rear] = start;
     rear = rear + 1;
